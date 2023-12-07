@@ -3,6 +3,8 @@ Graphics card spoofing libraries for DirectX
 
 I have developed these libraries to bypass vendor locking (mainly for Streamline), currently proxy acts as NVIDIA RTX 3060 Ti.
 
+For wrapper logic and identifying interfaces [RenderDoc](https://github.com/baldurk/renderdoc) source was super helpful.
+
 ## Installation
 * To use it with DirectX 12 games just place `dxgi.dll` and `d3d12.dll` next to executable.
 * To use it with DirectX 11 games just placing `dxgi.dll` next to executable should be enough.
