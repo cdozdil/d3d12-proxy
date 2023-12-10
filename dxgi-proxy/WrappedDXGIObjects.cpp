@@ -39,28 +39,43 @@ bool RefCountDXGIObject::HandleWrap(const char* ifaceName, REFIID riid, void** p
 	}
 	else if (riid == __uuidof(IDXGIAdapter))
 	{
+		if (b_wrappingEnabled)
+		{
 		IDXGIAdapter* real = (IDXGIAdapter*)(*ppvObject);
 		*ppvObject = (IDXGIAdapter*)(new WrappedIDXGIAdapter4(real));
 	}
+	}
 	else if (riid == __uuidof(IDXGIAdapter1))
 	{
+		if (b_wrappingEnabled)
+		{
 		IDXGIAdapter1* real = (IDXGIAdapter1*)(*ppvObject);
 		*ppvObject = (IDXGIAdapter1*)(new WrappedIDXGIAdapter4(real));
 	}
+	}
 	else if (riid == __uuidof(IDXGIAdapter2))
 	{
+		if (b_wrappingEnabled)
+		{
 		IDXGIAdapter2* real = (IDXGIAdapter2*)(*ppvObject);
 		*ppvObject = (IDXGIAdapter2*)(new WrappedIDXGIAdapter4(real));
 	}
+	}
 	else if (riid == __uuidof(IDXGIAdapter3))
 	{
+		if (b_wrappingEnabled)
+		{
 		IDXGIAdapter3* real = (IDXGIAdapter3*)(*ppvObject);
 		*ppvObject = (IDXGIAdapter3*)(new WrappedIDXGIAdapter4(real));
 	}
+	}
 	else if (riid == __uuidof(IDXGIAdapter4))
 	{
+		if (b_spoofEnabled)
+		{
 		IDXGIAdapter4* real = (IDXGIAdapter4*)(*ppvObject);
 		*ppvObject = (IDXGIAdapter4*)(new WrappedIDXGIAdapter4(real));
+	}
 	}
 	else if (riid == __uuidof(IDXGIFactory))
 	{

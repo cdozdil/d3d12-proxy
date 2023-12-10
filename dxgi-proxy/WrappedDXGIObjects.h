@@ -140,9 +140,11 @@ IDXGIProxyAdapter : public IUnknown
 {
 public:
 	virtual HRESULT STDMETHODCALLTYPE Spoofing(bool enable);
+	virtual HRESULT STDMETHODCALLTYPE Wrapping(bool enable);
 };
 
 static bool b_spoofEnabled = true;
+static bool b_wrappingEnabled = true;
 
 class WrappedIDXGIAdapter4 : public IDXGIAdapter4, public RefCountDXGIObject, public IDXGIProxyAdapter
 {
@@ -425,6 +427,13 @@ public:
 		b_spoofEnabled = enable;
 		return S_OK;
 	}
+
+	virtual HRESULT STDMETHODCALLTYPE Wrapping(bool enable)
+	{
+		LOG("WrappedIDXGIAdapter4.Wrapping : " + std::to_string(enable));
+		b_wrappingEnabled = enable;
+		return S_OK;
+	}
 };
 
 class WrappedIDXGIFactory : public IDXGIFactory7, public RefCountDXGIObject
@@ -705,31 +714,31 @@ public:
 			return false;
 		}
 
-		if (riid == __uuidof(IDXGIAdapter4))
+		if (riid == __uuidof(IDXGIAdapter4) && b_wrappingEnabled)
 		{
 			IDXGIAdapter4* adapter = (IDXGIAdapter4*)*ppvAdapter;
 			*ppvAdapter = (IDXGIAdapter4*)(new WrappedIDXGIAdapter4(adapter));
 			return true;
 		}
-		else if (riid == __uuidof(IDXGIAdapter3))
+		else if (riid == __uuidof(IDXGIAdapter3) && b_wrappingEnabled)
 		{
 			IDXGIAdapter3* adapter = (IDXGIAdapter3*)*ppvAdapter;
 			*ppvAdapter = (IDXGIAdapter3*)(new WrappedIDXGIAdapter4(adapter));
 			return true;
 		}
-		else if (riid == __uuidof(IDXGIAdapter2))
+		else if (riid == __uuidof(IDXGIAdapter2) && b_wrappingEnabled)
 		{
 			IDXGIAdapter2* adapter = (IDXGIAdapter2*)*ppvAdapter;
 			*ppvAdapter = (IDXGIAdapter2*)(new WrappedIDXGIAdapter4(adapter));
 			return true;
 		}
-		else if (riid == __uuidof(IDXGIAdapter1))
+		else if (riid == __uuidof(IDXGIAdapter1) && b_wrappingEnabled)
 		{
 			IDXGIAdapter1* adapter = (IDXGIAdapter1*)*ppvAdapter;
 			*ppvAdapter = (IDXGIAdapter1*)(new WrappedIDXGIAdapter4(adapter));
 			return true;
 		}
-		else if (riid == __uuidof(IDXGIAdapter))
+		else if (riid == __uuidof(IDXGIAdapter) && b_wrappingEnabled)
 		{
 			IDXGIAdapter* adapter = (IDXGIAdapter*)*ppvAdapter;
 			*ppvAdapter = (IDXGIAdapter*)(new WrappedIDXGIAdapter4(adapter));
