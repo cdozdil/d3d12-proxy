@@ -38,6 +38,18 @@ void loadOriginalD3D12Core()
 	}
 
 	getInterface = (PFN_GET_INTERFACE)GetProcAddress(originalD3D12Core, "D3D12GetInterface");
+
+	// Get the function address using GetProcAddress
+	UINT* pD3D12SDKVersion = reinterpret_cast<UINT*>(GetProcAddress(originalD3D12Core, "D3D12SDKVersion"));
+
+	// Check if the function address was obtained successfully
+	if (!pD3D12SDKVersion) 
+		LOG("originalD3D12Core: can't read D3D12SDKVersion");
+	else
+	{
+		LOG("originalD3D12Core D3D12SDKVersion: " + std::to_string(*pD3D12SDKVersion));
+		sdkVersion = *pD3D12SDKVersion;
+	}
 }
 
 
