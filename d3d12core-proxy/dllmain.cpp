@@ -91,6 +91,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 HRESULT WINAPI D3D12GetInterface(REFCLSID rcslid, REFIID iid, void** debug)
 {
 	LOG("D3D12GetInterface");
+	LOG("D3D12GetInterface rcslid: " + ToString(rcslid));
+	LOG("D3D12GetInterface iid: " + ToString(iid));
 
 #ifdef LOGGING_ACTIVE
 	if(__uuidof(ID3D12Debug) == rcslid)
@@ -133,9 +135,13 @@ HRESULT WINAPI D3D12GetInterface(REFCLSID rcslid, REFIID iid, void** debug)
 
 	HRESULT result = getInterface(rcslid, iid, debug);
 
+	ID3D12CoreModule* coremodule = (ID3D12CoreModule*)*debug;
+	*debug = new WrappedCoreModule(coremodule);
+
 	LOG("D3D12GetInterface: " + int_to_hex(result));
 
 	return result;
 }
 
-UINT D3D12SDKVersion = 610;
+extern "C" { _declspec(dllexport) extern const UINT D3D12SDKVersion = 611; }
+
