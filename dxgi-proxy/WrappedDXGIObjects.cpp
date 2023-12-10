@@ -246,6 +246,13 @@ HRESULT STDMETHODCALLTYPE WrappedIDXGIAdapter4::QueryInterface(REFIID riid, void
 {
 	LOG("WrappedIDXGIAdapter4.QueryInterface");
 
+#ifndef BLOCK_IDXGIAdapterInternal2
+	// unknown/undocumented internal interface
+	// {7abb6563-02bc-47c4-8ef9-acc4795edbcf}
+	static const GUID IDXGIAdapterInternal2_uuid = { 0x7abb6563, 0x02bc, 0x47c4, {0x8e, 0xf9, 0xac, 0xc4, 0x79, 0x5e, 0xdb, 0xcf} };
+#endif 
+
+
 	if (riid == __uuidof(IDXGIAdapter))
 	{
 		AddRef();
@@ -311,6 +318,13 @@ HRESULT STDMETHODCALLTYPE WrappedIDXGIAdapter4::QueryInterface(REFIID riid, void
 			return E_NOINTERFACE;
 		}
 	}
+#ifndef BLOCK_IDXGIAdapterInternal2
+	else if (riid == IDXGIAdapterInternal2_uuid && m_pReal != nullptr)
+	{
+		LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapterInternal2, returning real adapter");
+		return m_pReal->QueryInterface(riid, ppvObject);
+	}
+#endif
 
 	return RefCountDXGIObject::QueryInterface("IDXGIAdapter", riid, ppvObject);
 }
