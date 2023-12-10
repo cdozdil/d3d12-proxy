@@ -13,7 +13,6 @@ bool RefCountDXGIObject::HandleWrap(const char* ifaceName, REFIID riid, void** p
 		return false;
 	}
 
-
 	// unknown GUID that we only want to print once to avoid log spam
 	  // {79D2046C-22EF-451B-9E74-2245D9C760EA}
 	static const GUID Unknown_uuid = { 0x79d2046c, 0x22ef, 0x451b, {0x9e, 0x74, 0x22, 0x45, 0xd9, 0xc7, 0x60, 0xea} };
@@ -41,41 +40,41 @@ bool RefCountDXGIObject::HandleWrap(const char* ifaceName, REFIID riid, void** p
 	{
 		if (b_wrappingEnabled)
 		{
-		IDXGIAdapter* real = (IDXGIAdapter*)(*ppvObject);
-		*ppvObject = (IDXGIAdapter*)(new WrappedIDXGIAdapter4(real));
-	}
+			IDXGIAdapter* real = (IDXGIAdapter*)(*ppvObject);
+			*ppvObject = (IDXGIAdapter*)(new WrappedIDXGIAdapter4(real));
+		}
 	}
 	else if (riid == __uuidof(IDXGIAdapter1))
 	{
 		if (b_wrappingEnabled)
 		{
-		IDXGIAdapter1* real = (IDXGIAdapter1*)(*ppvObject);
-		*ppvObject = (IDXGIAdapter1*)(new WrappedIDXGIAdapter4(real));
-	}
+			IDXGIAdapter1* real = (IDXGIAdapter1*)(*ppvObject);
+			*ppvObject = (IDXGIAdapter1*)(new WrappedIDXGIAdapter4(real));
+		}
 	}
 	else if (riid == __uuidof(IDXGIAdapter2))
 	{
 		if (b_wrappingEnabled)
 		{
-		IDXGIAdapter2* real = (IDXGIAdapter2*)(*ppvObject);
-		*ppvObject = (IDXGIAdapter2*)(new WrappedIDXGIAdapter4(real));
-	}
+			IDXGIAdapter2* real = (IDXGIAdapter2*)(*ppvObject);
+			*ppvObject = (IDXGIAdapter2*)(new WrappedIDXGIAdapter4(real));
+		}
 	}
 	else if (riid == __uuidof(IDXGIAdapter3))
 	{
 		if (b_wrappingEnabled)
 		{
-		IDXGIAdapter3* real = (IDXGIAdapter3*)(*ppvObject);
-		*ppvObject = (IDXGIAdapter3*)(new WrappedIDXGIAdapter4(real));
-	}
+			IDXGIAdapter3* real = (IDXGIAdapter3*)(*ppvObject);
+			*ppvObject = (IDXGIAdapter3*)(new WrappedIDXGIAdapter4(real));
+		}
 	}
 	else if (riid == __uuidof(IDXGIAdapter4))
 	{
 		if (b_spoofEnabled)
 		{
-		IDXGIAdapter4* real = (IDXGIAdapter4*)(*ppvObject);
-		*ppvObject = (IDXGIAdapter4*)(new WrappedIDXGIAdapter4(real));
-	}
+			IDXGIAdapter4* real = (IDXGIAdapter4*)(*ppvObject);
+			*ppvObject = (IDXGIAdapter4*)(new WrappedIDXGIAdapter4(real));
+		}
 	}
 	else if (riid == __uuidof(IDXGIFactory))
 	{
@@ -186,7 +185,7 @@ HRESULT STDMETHODCALLTYPE RefCountDXGIObject::GetParent(
 
 HRESULT RefCountDXGIObject::WrapQueryInterface(IUnknown* real, const char* ifaceName, REFIID riid, void** ppvObject)
 {
-	LOG("RefCountDXGIObject.WrapQueryInterface");
+	LOG("RefCountDXGIObject.WrapQueryInterface riid: " + ToString(riid));
 
 #ifdef BLOCK_IDXGIAdapterInternal2
 	// unknown/undocumented internal interface
@@ -201,15 +200,15 @@ HRESULT RefCountDXGIObject::WrapQueryInterface(IUnknown* real, const char* iface
 #endif
 
 	HRESULT ret = real->QueryInterface(riid, ppvObject);
+	LOG("RefCountDXGIObject.WrapQueryInterface real->QueryInterface result: " + int_to_hex(ret));
 
 	if (ret == S_OK && HandleWrap(ifaceName, riid, ppvObject))
 	{
-
-		LOG("RefCountDXGIObject.WrapQueryInterface result: " + int_to_hex(ret));
+		LOG("RefCountDXGIObject.WrapQueryInterface HandleWrap result: " + int_to_hex(ret));
 		return ret;
 	}
 
-	LOG("RefCountDXGIObject.WrapQueryInterface result: " + int_to_hex(E_NOINTERFACE));
+	LOG("RefCountDXGIObject.WrapQueryInterface result: E_NOINTERFACE");
 	return E_NOINTERFACE;
 }
 
@@ -244,7 +243,7 @@ WrappedIDXGIAdapter4::~WrappedIDXGIAdapter4()
 
 HRESULT STDMETHODCALLTYPE WrappedIDXGIAdapter4::QueryInterface(REFIID riid, void** ppvObject)
 {
-	LOG("WrappedIDXGIAdapter4.QueryInterface");
+	LOG("WrappedIDXGIAdapter4.QueryInterface riid: " + ToString(riid));
 
 #ifndef BLOCK_IDXGIAdapterInternal2
 	// unknown/undocumented internal interface
@@ -255,6 +254,7 @@ HRESULT STDMETHODCALLTYPE WrappedIDXGIAdapter4::QueryInterface(REFIID riid, void
 
 	if (riid == __uuidof(IDXGIAdapter))
 	{
+		LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter");
 		AddRef();
 		*ppvObject = (IDXGIAdapter*)this;
 		return S_OK;
@@ -268,53 +268,69 @@ HRESULT STDMETHODCALLTYPE WrappedIDXGIAdapter4::QueryInterface(REFIID riid, void
 	}
 	else if (riid == __uuidof(IDXGIAdapter1))
 	{
+		LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter1");
+
 		if (m_pReal1)
 		{
 			AddRef();
 			*ppvObject = (IDXGIAdapter1*)this;
+			LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter1 result: OK");
 			return S_OK;
 		}
 		else
 		{
+			LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter1 result: E_NOINTERFACE");
 			return E_NOINTERFACE;
 		}
 	}
 	else if (riid == __uuidof(IDXGIAdapter2))
 	{
+		LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter2");
+
 		if (m_pReal2)
 		{
 			AddRef();
 			*ppvObject = (IDXGIAdapter2*)this;
+			LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter2 result: OK");
 			return S_OK;
 		}
 		else
 		{
+			LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter2 result: E_NOINTERFACE");
 			return E_NOINTERFACE;
 		}
 	}
 	else if (riid == __uuidof(IDXGIAdapter3))
 	{
+		LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter3");
+
 		if (m_pReal3)
 		{
 			AddRef();
 			*ppvObject = (IDXGIAdapter3*)this;
+			LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter3 result: OK");
 			return S_OK;
 		}
 		else
 		{
+			LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter3 result: E_NOINTERFACE");
 			return E_NOINTERFACE;
 		}
 	}
 	else if (riid == __uuidof(IDXGIAdapter4))
 	{
-		if (m_pReal3)
+		LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter4");
+
+		if (m_pReal4)
 		{
 			AddRef();
 			*ppvObject = (IDXGIAdapter4*)this;
+			LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter4 result: OK");
 			return S_OK;
 		}
 		else
 		{
+			LOG("WrappedIDXGIAdapter4.QueryInterface for IDXGIAdapter4 result: E_NOINTERFACE");
 			return E_NOINTERFACE;
 		}
 	}
@@ -328,7 +344,6 @@ HRESULT STDMETHODCALLTYPE WrappedIDXGIAdapter4::QueryInterface(REFIID riid, void
 
 	return RefCountDXGIObject::QueryInterface("IDXGIAdapter", riid, ppvObject);
 }
-
 
 WrappedIDXGIFactory::WrappedIDXGIFactory(IDXGIFactory* real)
 	: RefCountDXGIObject(real), m_pReal(real)
@@ -492,7 +507,6 @@ HRESULT WrappedIDXGIFactory::CreateSwapChain(IUnknown* pDevice, DXGI_SWAP_CHAIN_
 	IDXGISwapChain** ppSwapChain)
 {
 	LOG("WrappedIDXGIFactory.CreateSwapChain");
-
 	return m_pReal->CreateSwapChain(pDevice, pDesc, ppSwapChain);
 }
 
@@ -502,7 +516,6 @@ HRESULT WrappedIDXGIFactory::CreateSwapChainForHwnd(
 	IDXGISwapChain1** ppSwapChain)
 {
 	LOG("WrappedIDXGIFactory.CreateSwapChainForHwnd");
-
 	return m_pReal2->CreateSwapChainForHwnd(pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 }
 
@@ -512,7 +525,6 @@ HRESULT WrappedIDXGIFactory::CreateSwapChainForCoreWindow(IUnknown* pDevice, IUn
 	IDXGISwapChain1** ppSwapChain)
 {
 	LOG("WrappedIDXGIFactory.CreateSwapChainForCoreWindow");
-
 	return m_pReal2->CreateSwapChainForCoreWindow(pDevice, pWindow, pDesc, pRestrictToOutput, ppSwapChain);
 }
 
@@ -522,6 +534,5 @@ HRESULT WrappedIDXGIFactory::CreateSwapChainForComposition(IUnknown* pDevice,
 	IDXGISwapChain1** ppSwapChain)
 {
 	LOG("WrappedIDXGIFactory.CreateSwapChainForComposition");
-
 	return m_pReal2->CreateSwapChainForComposition(pDevice, pDesc, pRestrictToOutput, ppSwapChain);
 }

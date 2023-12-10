@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "dxgi1_6.h"
 
-#define BLOCK_IDXGIAdapterInternal2
+//#define BLOCK_IDXGIAdapterInternal2
 
 class RefCountDXGIObject : public IDXGIObject
 {
@@ -154,7 +154,6 @@ class WrappedIDXGIAdapter4 : public IDXGIAdapter4, public RefCountDXGIObject, pu
 	IDXGIAdapter3* m_pReal3;
 	IDXGIAdapter4* m_pReal4;
 
-
 public:
 	IDXGIAdapter* m_pReal;
 	WrappedIDXGIAdapter4(IDXGIAdapter* real);
@@ -199,7 +198,7 @@ public:
 			std::memcpy(&pDesc->AdapterLuid, &luid, 8);
 		}
 
-		b_spoofEnabled = true;
+		//b_spoofEnabled = true;
 
 		LOG("WrappedIDXGIAdapter4.GetDesc result: " + int_to_hex(hr));
 		return hr;
@@ -253,7 +252,7 @@ public:
 			std::memcpy(&pDesc->AdapterLuid, &luid, 8);
 		}
 
-		b_spoofEnabled = true;
+		//b_spoofEnabled = true;
 
 		LOG("WrappedIDXGIAdapter4.GetDesc1 result: " + int_to_hex(hr));
 		return hr;
@@ -295,7 +294,7 @@ public:
 			std::memcpy(&pDesc->AdapterLuid, &luid, 8);
 		}
 
-		b_spoofEnabled = true;
+		//b_spoofEnabled = true;
 
 		LOG("WrappedIDXGIAdapter4.GetDesc2 result: " + int_to_hex(hr));
 
@@ -415,7 +414,7 @@ public:
 			std::memcpy(&pDesc->AdapterLuid, &luid, 8);
 		}
 
-		b_spoofEnabled = true;
+		//b_spoofEnabled = true;
 
 		LOG("WrappedIDXGIAdapter4.GetDesc3 result: " + int_to_hex(hr));
 
@@ -463,7 +462,7 @@ public:
 		/* [annotation][out] */
 		__out IDXGIAdapter** ppAdapter)
 	{
-		LOG("WrappedIDXGIFactory.EnumAdapters");
+		LOG("WrappedIDXGIFactory.EnumAdapters " + std::to_string(Adapter));
 
 		HRESULT ret = m_pReal->EnumAdapters(Adapter, ppAdapter);
 		
@@ -526,7 +525,7 @@ public:
 		/* [annotation][out] */
 		__out IDXGIAdapter1** ppAdapter)
 	{
-		LOG("WrappedIDXGIFactory.EnumAdapters1");
+		LOG("WrappedIDXGIFactory.EnumAdapters1 " + std::to_string(Adapter));
 
 		IDXGIFactory1* factory = m_pReal1;
 		if (m_pReal1 == NULL)
@@ -710,7 +709,6 @@ public:
 
 		if (ppvAdapter == NULL || *ppvAdapter == NULL)
 		{
-
 			LOG("WrappedIDXGIFactory.WrapAdapter ppvAdapter is NULL!");
 			return false;
 		}
@@ -843,7 +841,7 @@ public:
 		/* [annotation] */
 		_COM_Outptr_ void** ppvAdapter)
 	{
-		LOG("WrappedIDXGIFactory.EnumAdapterByGpuPreference");
+		LOG("WrappedIDXGIFactory.EnumAdapterByGpuPreference " + std::to_string(Adapter) + ", GpuPreference: " + int_to_hex(GpuPreference));
 
 		HRESULT ret = m_pReal6->EnumAdapterByGpuPreference(Adapter, GpuPreference, riid, ppvAdapter);
 
