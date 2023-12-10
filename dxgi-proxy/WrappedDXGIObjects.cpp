@@ -163,7 +163,7 @@ HRESULT STDMETHODCALLTYPE RefCountDXGIObject::GetParent(
 
 	HRESULT ret = m_pReal->GetParent(riid, ppParent);
 
-	if (SUCCEEDED(ret))
+	if (ret == S_OK)
 		HandleWrap("GetParent", riid, ppParent);
 
 	return ret;
@@ -187,7 +187,7 @@ HRESULT RefCountDXGIObject::WrapQueryInterface(IUnknown* real, const char* iface
 
 	HRESULT ret = real->QueryInterface(riid, ppvObject);
 
-	if (SUCCEEDED(ret) && HandleWrap(ifaceName, riid, ppvObject))
+	if (ret == S_OK && HandleWrap(ifaceName, riid, ppvObject))
 	{
 
 		LOG("RefCountDXGIObject.WrapQueryInterface result: " + int_to_hex(ret));

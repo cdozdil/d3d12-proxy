@@ -179,7 +179,7 @@ public:
 		HRESULT hr;
 		hr = m_pReal->GetDesc(pDesc);
 
-		if (SUCCEEDED(hr) && b_spoofEnabled && pDesc != nullptr && (pDesc->VendorId == 0x8086 || pDesc->VendorId == 0x1002))
+		if (hr == S_OK && b_spoofEnabled && pDesc != nullptr && (pDesc->VendorId == 0x8086 || pDesc->VendorId == 0x1002))
 		{
 			LOG("WrappedIDXGIAdapter4.GetDesc Spoofing card info");
 			pDesc->VendorId = 0x10de;
@@ -232,7 +232,7 @@ public:
 		HRESULT hr;
 		hr = m_pReal1->GetDesc1(pDesc);
 
-		if (SUCCEEDED(hr) && b_spoofEnabled && pDesc != nullptr && (pDesc->VendorId == 0x8086 || pDesc->VendorId == 0x1002))
+		if (hr == S_OK && b_spoofEnabled && pDesc != nullptr && (pDesc->VendorId == 0x8086 || pDesc->VendorId == 0x1002))
 		{
 			LOG("WrappedIDXGIAdapter4.GetDesc1 Spoofing card info");
 
@@ -274,7 +274,7 @@ public:
 		HRESULT hr;
 		hr = m_pReal2->GetDesc2(pDesc);
 
-		if (SUCCEEDED(hr) && b_spoofEnabled && pDesc != nullptr && (pDesc->VendorId == 0x8086 || pDesc->VendorId == 0x1002))
+		if (hr == S_OK && b_spoofEnabled && pDesc != nullptr && (pDesc->VendorId == 0x8086 || pDesc->VendorId == 0x1002))
 		{
 			LOG("WrappedIDXGIAdapter4.GetDesc2 Spoofing card info");
 
@@ -394,7 +394,7 @@ public:
 		HRESULT hr;
 		hr = m_pReal4->GetDesc3(pDesc);
 
-		if (SUCCEEDED(hr) && b_spoofEnabled && pDesc != nullptr && (pDesc->VendorId == 0x8086 || pDesc->VendorId == 0x1002))
+		if (hr == S_OK && b_spoofEnabled && pDesc != nullptr && (pDesc->VendorId == 0x8086 || pDesc->VendorId == 0x1002))
 		{
 			LOG("WrappedIDXGIAdapter4.GetDesc3 Spoofing card info");
 
@@ -456,7 +456,8 @@ public:
 		LOG("WrappedIDXGIFactory.EnumAdapters");
 
 		HRESULT ret = m_pReal->EnumAdapters(Adapter, ppAdapter);
-		if (SUCCEEDED(ret))
+		
+		if (ret == S_OK && b_wrappingEnabled)
 			*ppAdapter = (IDXGIAdapter*)(new WrappedIDXGIAdapter4(*ppAdapter));
 
 		LOG("WrappedIDXGIFactory.EnumAdapters result: " + int_to_hex(ret));
@@ -499,7 +500,8 @@ public:
 		LOG("WrappedIDXGIFactory.CreateSoftwareAdapter");
 
 		HRESULT ret = m_pReal->CreateSoftwareAdapter(Module, ppAdapter);
-		if (SUCCEEDED(ret))
+		
+		if (ret == S_OK && b_wrappingEnabled)
 			*ppAdapter = (IDXGIAdapter*)(new WrappedIDXGIAdapter4(*ppAdapter));
 
 		LOG("WrappedIDXGIFactory.CreateSoftwareAdapter result: " + int_to_hex(ret));
@@ -526,7 +528,7 @@ public:
 
 		HRESULT ret = factory->EnumAdapters1(Adapter, ppAdapter);
 
-		if (SUCCEEDED(ret))
+		if (ret == S_OK && b_wrappingEnabled)
 			*ppAdapter = (IDXGIAdapter1*)(new WrappedIDXGIAdapter4(*ppAdapter));
 
 		LOG("WrappedIDXGIFactory.EnumAdapters1 result: " + int_to_hex(ret));
@@ -761,7 +763,7 @@ public:
 
 		HRESULT ret = m_pReal4->EnumAdapterByLuid(AdapterLuid, riid, ppvAdapter);
 
-		if (SUCCEEDED(ret))
+		if (ret == S_OK && b_wrappingEnabled)
 		{
 			auto wrapResult = this->WrapAdapter(riid, ppvAdapter);
 
@@ -777,7 +779,7 @@ public:
 			IDXGIAdapter* wrappedAdapter;
 			ret = this->EnumAdapters(0, &wrappedAdapter);
 
-			if (SUCCEEDED(ret))
+			if (ret == S_OK)
 				*ppvAdapter = wrappedAdapter;
 		}
 
@@ -794,7 +796,8 @@ public:
 		LOG("WrappedIDXGIFactory.EnumWarpAdapter");
 
 		HRESULT ret = m_pReal4->EnumWarpAdapter(riid, ppvAdapter);
-		if (SUCCEEDED(ret))
+		
+		if (ret == S_OK && b_wrappingEnabled)
 			WrapAdapter(riid, ppvAdapter);
 
 		LOG("WrappedIDXGIFactory.EnumWarpAdapter result: " + int_to_hex(ret));
@@ -833,7 +836,8 @@ public:
 		LOG("WrappedIDXGIFactory.EnumAdapterByGpuPreference");
 
 		HRESULT ret = m_pReal6->EnumAdapterByGpuPreference(Adapter, GpuPreference, riid, ppvAdapter);
-		if (SUCCEEDED(ret))
+
+		if (ret == S_OK && b_wrappingEnabled)
 			WrapAdapter(riid, ppvAdapter);
 
 		LOG("WrappedIDXGIFactory.EnumAdapterByGpuPreference result: " + int_to_hex(ret));

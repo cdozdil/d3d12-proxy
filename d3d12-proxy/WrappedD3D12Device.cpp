@@ -111,7 +111,7 @@ HRESULT RefCountD3D12Object::WrapQueryInterface(IUnknown* real, const char* ifac
 
 	HRESULT ret = real->QueryInterface(riid, ppvObject);
 
-	if (SUCCEEDED(ret) && HandleWrap(ifaceName, riid, ppvObject))
+	if (ret == S_OK && HandleWrap(ifaceName, riid, ppvObject))
 		return ret;
 
 	*ppvObject = NULL;
@@ -321,7 +321,7 @@ HRESULT __stdcall WrappedD3D12Device::QueryInterface(REFIID riid, void** ppvObje
 
 	auto hr = m_device->QueryInterface(riid, ppvObject);
 
-	if (SUCCEEDED(hr) && *ppvObject != nullptr)
+	if (hr == S_OK && *ppvObject != nullptr)
 	{
 		auto wrapResult = RefCountD3D12Object::HandleWrap("ID3DDevice", riid, ppvObject);
 

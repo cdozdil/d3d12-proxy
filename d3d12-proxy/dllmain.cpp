@@ -158,7 +158,7 @@ HRESULT WINAPI D3D12CreateDevice(_In_opt_ IUnknown* pAdapter, D3D_FEATURE_LEVEL 
 	LOG("D3D12CreateDevice: pAdapter is null!");
 	result = createDevice(pAdapter, MinimumFeatureLevel, riid, ppDevice);
 
-	if (SUCCEEDED(result))
+	if (result == S_OK)
 	{
 		LOG("D3D12CreateDevice: OK!");
 		ID3D12Device* real = (ID3D12Device*)(*ppDevice);

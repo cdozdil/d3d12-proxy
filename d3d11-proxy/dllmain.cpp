@@ -233,7 +233,7 @@ HRESULT WINAPI D3D11CoreCreateDevice(IDXGIFactory* pFactory, IDXGIAdapter* pAdap
 	HRESULT result;
 	result = coreCreateDevice(pFactory, pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel);
 
-	if (!SUCCEEDED(result))
+	if (result != S_OK)
 		LOG("D3D11CoreCreateDevice: " + int_to_hex(result));
 	else
 		LOG("D3D11CoreCreateDevice: OK!");
@@ -254,7 +254,7 @@ HRESULT WINAPI D3D11CreateDevice(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverT
 	HRESULT result;
 	result = createDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
 
-	if (!SUCCEEDED(result))
+	if (result != S_OK)
 		LOG("D3D11CreateDevice: " + int_to_hex(result));
 	else
 		LOG("D3D11CreateDevice: OK!");
@@ -275,7 +275,7 @@ HRESULT WINAPI D3D11CreateDeviceAndSwapChain(IDXGIAdapter* pAdapter, D3D_DRIVER_
 	HRESULT result;
 	result = createDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
 
-	if (!SUCCEEDED(result))
+	if (result != S_OK)
 		LOG("D3D11CreateDeviceAndSwapChain: " + int_to_hex(result));
 	else
 		LOG("D3D11CreateDeviceAndSwapChain: OK!");

@@ -91,7 +91,7 @@ HRESULT WINAPI CreateDXGIFactory(REFIID riid, _COM_Outptr_ void** ppFactory)
 
 	HRESULT result = createDxgiFactory(riid, ppFactory);
 
-	if (SUCCEEDED(result))
+	if (result == S_OK)
 	{
 		RefCountDXGIObject::HandleWrap("CreateDXGIFactory", riid, ppFactory);
 		LOG("CreateDXGIFactory: Factory created");
@@ -112,7 +112,7 @@ HRESULT WINAPI CreateDXGIFactory1(REFIID riid, _COM_Outptr_ void** ppFactory)
 
 	HRESULT result = createDxgiFactory1(riid, ppFactory);
 
-	if (SUCCEEDED(result))
+	if (result == S_OK)
 	{
 		RefCountDXGIObject::HandleWrap("CreateDXGIFactory1", riid, ppFactory);
 		LOG("CreateDXGIFactory1: Factory created");
@@ -133,7 +133,7 @@ HRESULT WINAPI CreateDXGIFactory2(UINT Flags, REFIID riid, _COM_Outptr_ void** p
 
 	HRESULT result = createDxgiFactory2(Flags, riid, ppFactory);
 
-	if (SUCCEEDED(result))
+	if (result == S_OK)
 	{
 		RefCountDXGIObject::HandleWrap("CreateDXGIFactory1", riid, ppFactory);
 		LOG("CreateDXGIFactory2: Factory created");
