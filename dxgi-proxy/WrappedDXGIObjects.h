@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "dxgi1_6.h"
 
 #define BLOCK_IDXGIAdapterInternal2
 

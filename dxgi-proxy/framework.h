@@ -8,6 +8,5 @@
 #include <sstream>
 #include <fstream>
 
-#include "dxgi1_6.h"
 
 
