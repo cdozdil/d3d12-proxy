@@ -9,4 +9,3 @@
 #include <iomanip>
 #include <sstream>
 
-#include "d3d12.h"

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "d3d12.h"
 class RefCountD3D12Object : public ID3D12Object
 {
 	ID3D12Object* m_pReal;
