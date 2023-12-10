@@ -24,6 +24,15 @@ void loadOriginalD3D12Core()
 
 	if (!originalD3D12Core)
 	{
+		char dllpath[MAX_PATH];
+		GetSystemDirectory(dllpath, MAX_PATH);
+		strcat(dllpath, "\\D3D12\\d3d12core.dll");
+		LOG(dllpath);
+		originalD3D12Core = LoadLibrary(dllpath);
+	}
+
+	if (!originalD3D12Core)
+	{
 		LOG("originalD3D12Core: no originalD3D12Core");
 		return;
 	}
