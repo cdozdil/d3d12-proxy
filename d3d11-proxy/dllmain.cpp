@@ -1,6 +1,7 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 #include "dllmain.h"
+#include "..\d3d12-proxy\WrappedD3D12Device.h"
 
 #define _CRT_SECURE_NO_DEPRECATE
 #pragma warning (disable : 4996)
@@ -290,6 +291,15 @@ HRESULT WINAPI D3D11On12CreateDevice(IUnknown* pDevice, UINT Flags, const D3D_FE
 	{
 		LOG("D3D11On12CreateDevice: no originalD3D11");
 		return DXGI_ERROR_NOT_FOUND;
+	}
+
+	WrappedD3D12Device* proxyDevice = nullptr;
+	if (pDevice->QueryInterface(__uuidof(ID3D12ProxyDevice), (void**)&proxyDevice) == S_OK && proxyDevice != nullptr)
+	{
+		LOG("D3D11On12CreateDevice ID3D12ProxyDevice found");
+		auto result = d3d11on12CreateDevice(proxyDevice->m_device, Flags, pFeatureLevels, FeatureLevels, ppCommandQueues, NumQueues, NodeMask, ppDevice, ppImmediateContext, pChosenFeatureLevel);
+		LOG("D3D11On12CreateDevice: " + int_to_hex(result));
+		return result;
 	}
 
 	auto result = d3d11on12CreateDevice(pDevice, Flags, pFeatureLevels, FeatureLevels, ppCommandQueues, NumQueues, NodeMask, ppDevice, ppImmediateContext, pChosenFeatureLevel);
