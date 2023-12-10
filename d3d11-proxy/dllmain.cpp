@@ -304,7 +304,7 @@ HRESULT WINAPI D3D11On12CreateDevice(IUnknown* pDevice, UINT Flags, const D3D_FE
 
 	auto result = d3d11on12CreateDevice(pDevice, Flags, pFeatureLevels, FeatureLevels, ppCommandQueues, NumQueues, NodeMask, ppDevice, ppImmediateContext, pChosenFeatureLevel);
 
-	if (!SUCCEEDED(result))
+	if (result == S_OK)
 		LOG("D3D11On12CreateDevice: " + int_to_hex(result));
 	else
 		LOG("D3D11On12CreateDevice: OK!");
