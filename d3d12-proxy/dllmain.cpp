@@ -1,7 +1,6 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 #include "dllmain.h"
-//#include "WrappedDXGIObjects.h"
 #include "WrappedD3D12Device.h"
 
 #define _CRT_SECURE_NO_DEPRECATE
@@ -132,24 +131,39 @@ HRESULT WINAPI D3D12CreateDevice(_In_opt_ IUnknown* pAdapter, D3D_FEATURE_LEVEL 
 		LOG("D3D12CreateDevice querying proxy adapter interface...");
 
 		IDXGIProxyAdapter* proxy = nullptr;
-		if (SUCCEEDED(pAdapter->QueryInterface(__uuidof(IDXGIProxyAdapter), (void**)&proxy)))
+		if (pAdapter->QueryInterface(__uuidof(IDXGIProxyAdapter), (void**)&proxy) == S_OK && proxy != nullptr)
 		{
 			LOG("D3D12CreateDevice proxy adapter acquired, disabling spoofing...");
 			proxy->Spoofing(false);
 			result = createDevice(pAdapter, MinimumFeatureLevel, riid, ppDevice);
 			proxy->Spoofing(true);
 			LOG("D3D12CreateDevice enabling spoofing...");
+
+			if (result == S_OK)
+			{
+				ID3D12Device* real = (ID3D12Device*)(*ppDevice);
+				real->AddRef();
+				auto wrappedDevice = new WrappedD3D12Device(real);
+				proxy->AddRef();
+				wrappedDevice->SetProxyAdapter(proxy);
+				LOG("D3D12CreateDevice assigned proxy adapter...");
+				*ppDevice = wrappedDevice;
+			}
 		}
 		else
 		{
 			LOG("D3D12CreateDevice no proxy adapter...");
 			result = createDevice(pAdapter, MinimumFeatureLevel, riid, ppDevice);
+			LOG("D3D12CreateDevice no proxy adapter create result: " + int_to_hex(result));
+
+			if (result == S_OK)
+			{
+				LOG("D3D12CreateDevice wrapping device...");
+				ID3D12Device* real = (ID3D12Device*)(*ppDevice);
+				real->AddRef();
+				*ppDevice = new WrappedD3D12Device(real);
+			}
 		}
-
-
-		ID3D12Device* real = (ID3D12Device*)(*ppDevice);
-		real->AddRef();
-		*ppDevice = new WrappedD3D12Device(real);
 
 		LOG("D3D12CreateDevice result: " + int_to_hex(result));
 		return result;

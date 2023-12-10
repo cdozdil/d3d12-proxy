@@ -10,6 +10,14 @@
 // add headers that you want to pre-compile here
 #include "framework.h"
 
+#define LOGGING_ACTIVE 
+
+#ifdef LOGGING_ACTIVE
+#define LOG(string) logprintf(string)
+#else
+#define LOG(string)
+#endif
+
 #define SAFE_RELEASE(p) \
   do                    \
   {                     \
@@ -19,14 +27,6 @@
 	  (p) = NULL;       \
 	}                   \
   } while((void)0, 0)
-
-#define LOGGING_ACTIVE 
-
-#ifdef LOGGING_ACTIVE
-#define LOG(string) logprintf(string)
-#else
-#define LOG(string)
-#endif
 
 #ifdef LOGGING_ACTIVE
 
