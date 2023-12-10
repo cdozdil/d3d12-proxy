@@ -118,7 +118,6 @@ HRESULT RefCountD3D12Object::WrapQueryInterface(IUnknown* real, const char* ifac
 	return E_NOINTERFACE;
 }
 
-
 WrappedD3D12Device::WrappedD3D12Device(ID3D12Device* device) : RefCountD3D12Object(device), m_device(device)
 {
 	m_device1 = NULL;
@@ -168,13 +167,14 @@ HRESULT __stdcall WrappedD3D12Device::QueryInterface(REFIID riid, void** ppvObje
 
 	if (riid == __uuidof(ID3D12Device))
 	{
-		if (m_device == nullptr)
-		{
-			LOG("D3D12Device.QueryInterface: m_device is not available, returning E_NOINTERFACE");
-			return E_NOINTERFACE;
-		}
-
 		LOG("D3D12Device.QueryInterface: Looking for ID3D12Device, returning this");
+		AddRef();
+		*ppvObject = this;
+		return S_OK;
+	}
+	if (riid == __uuidof(ID3D12ProxyDevice))
+	{
+		LOG("D3D12Device.QueryInterface: Looking for ID3D12ProxyDevice, returning this");
 		AddRef();
 		*ppvObject = this;
 		return S_OK;

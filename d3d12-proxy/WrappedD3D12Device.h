@@ -1,6 +1,8 @@
 #pragma once
 
 #include "d3d12.h"
+#include "..\dxgi-proxy\WrappedDXGIObjects.h"
+
 class RefCountD3D12Object : public ID3D12Object
 {
 	ID3D12Object* m_pReal;
@@ -123,9 +125,16 @@ public:
 	return RefCountD3D12Object::SetName(Name);														\
   }
 
-class WrappedD3D12Device : public ID3D12Device10, public RefCountD3D12Object
+MIDL_INTERFACE("fa4994ad-dbe4-44b9-8c5c-bb5cf7188b6e")
+ID3D12ProxyDevice : public IUnknown
 {
-	ID3D12Device* m_device;
+public:
+	virtual HRESULT STDMETHODCALLTYPE GetProxyAdapter(IDXGIProxyAdapter** adapter);
+	virtual HRESULT STDMETHODCALLTYPE SetProxyAdapter(IDXGIProxyAdapter* adapter);
+};
+
+class WrappedD3D12Device : public ID3D12Device10, public RefCountD3D12Object, public ID3D12ProxyDevice
+{
 	ID3D12Device1* m_device1;
 	ID3D12Device2* m_device2;
 	ID3D12Device3* m_device3;
@@ -136,8 +145,10 @@ class WrappedD3D12Device : public ID3D12Device10, public RefCountD3D12Object
 	ID3D12Device8* m_device8;
 	ID3D12Device9* m_device9;
 	ID3D12Device10* m_device10;
+	IDXGIProxyAdapter* m_adapter;
 
 public:
+	ID3D12Device* m_device;
 	WrappedD3D12Device(ID3D12Device* device);
 
 	virtual ~WrappedD3D12Device();
@@ -220,5 +231,16 @@ public:
 	HRESULT __stdcall CreatePlacedResource2(ID3D12Heap* pHeap, UINT64 HeapOffset, const D3D12_RESOURCE_DESC1* pDesc, D3D12_BARRIER_LAYOUT InitialLayout, const D3D12_CLEAR_VALUE* pOptimizedClearValue, UINT32 NumCastableFormats, DXGI_FORMAT* pCastableFormats, REFIID riid, void** ppvResource) override;
 	HRESULT __stdcall CreateReservedResource2(const D3D12_RESOURCE_DESC* pDesc, D3D12_BARRIER_LAYOUT InitialLayout, const D3D12_CLEAR_VALUE* pOptimizedClearValue, ID3D12ProtectedResourceSession* pProtectedSession, UINT32 NumCastableFormats, DXGI_FORMAT* pCastableFormats, REFIID riid, void** ppvResource) override;
 
+	virtual HRESULT STDMETHODCALLTYPE GetProxyAdapter(IDXGIProxyAdapter** adapter)
+	{
+		*adapter = m_adapter;
+		return S_OK;
+	}
+
+	virtual HRESULT STDMETHODCALLTYPE SetProxyAdapter(IDXGIProxyAdapter* adapter)
+	{
+		m_adapter = adapter;
+		return S_OK;
+	}
 };
 
