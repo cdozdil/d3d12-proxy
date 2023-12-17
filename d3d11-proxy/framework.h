@@ -4,7 +4,6 @@
 // Windows Header Files
 
 #include <windows.h>
-#include "d3d12.h"
 #include <string>
 #include <fstream>
 #include <iomanip>

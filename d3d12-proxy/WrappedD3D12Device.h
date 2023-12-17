@@ -1,7 +1,6 @@
 #pragma once
 
 #include "d3d12.h"
-#include "..\dxgi-proxy\WrappedDXGIObjects.h"
 
 class RefCountD3D12Object : public ID3D12Object
 {
@@ -125,15 +124,8 @@ public:
 	return RefCountD3D12Object::SetName(Name);														\
   }
 
-MIDL_INTERFACE("fa4994ad-dbe4-44b9-8c5c-bb5cf7188b6e")
-ID3D12ProxyDevice : public IUnknown
-{
-public:
-	virtual HRESULT STDMETHODCALLTYPE GetProxyAdapter(IDXGIProxyAdapter** adapter);
-	virtual HRESULT STDMETHODCALLTYPE SetProxyAdapter(IDXGIProxyAdapter* adapter);
-};
 
-class WrappedD3D12Device : public ID3D12Device10, public RefCountD3D12Object, public ID3D12ProxyDevice
+class WrappedD3D12Device : public ID3D12Device10, public RefCountD3D12Object
 {
 	ID3D12Device1* m_device1;
 	ID3D12Device2* m_device2;
@@ -145,7 +137,6 @@ class WrappedD3D12Device : public ID3D12Device10, public RefCountD3D12Object, pu
 	ID3D12Device8* m_device8;
 	ID3D12Device9* m_device9;
 	ID3D12Device10* m_device10;
-	IDXGIProxyAdapter* m_adapter;
 
 public:
 	ID3D12Device* m_device;
@@ -230,17 +221,5 @@ public:
 	HRESULT __stdcall CreateCommittedResource3(const D3D12_HEAP_PROPERTIES* pHeapProperties, D3D12_HEAP_FLAGS HeapFlags, const D3D12_RESOURCE_DESC1* pDesc, D3D12_BARRIER_LAYOUT InitialLayout, const D3D12_CLEAR_VALUE* pOptimizedClearValue, ID3D12ProtectedResourceSession* pProtectedSession, UINT32 NumCastableFormats, DXGI_FORMAT* pCastableFormats, REFIID riidResource, void** ppvResource) override;
 	HRESULT __stdcall CreatePlacedResource2(ID3D12Heap* pHeap, UINT64 HeapOffset, const D3D12_RESOURCE_DESC1* pDesc, D3D12_BARRIER_LAYOUT InitialLayout, const D3D12_CLEAR_VALUE* pOptimizedClearValue, UINT32 NumCastableFormats, DXGI_FORMAT* pCastableFormats, REFIID riid, void** ppvResource) override;
 	HRESULT __stdcall CreateReservedResource2(const D3D12_RESOURCE_DESC* pDesc, D3D12_BARRIER_LAYOUT InitialLayout, const D3D12_CLEAR_VALUE* pOptimizedClearValue, ID3D12ProtectedResourceSession* pProtectedSession, UINT32 NumCastableFormats, DXGI_FORMAT* pCastableFormats, REFIID riid, void** ppvResource) override;
-
-	virtual HRESULT STDMETHODCALLTYPE GetProxyAdapter(IDXGIProxyAdapter** adapter)
-	{
-		*adapter = m_adapter;
-		return S_OK;
-	}
-
-	virtual HRESULT STDMETHODCALLTYPE SetProxyAdapter(IDXGIProxyAdapter* adapter)
-	{
-		m_adapter = adapter;
-		return S_OK;
-	}
 };
 

@@ -1,12 +1,16 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
+
 #include "pch.h"
 #include "dllmain.h"
-#include "..\d3d12-proxy\WrappedD3D12Device.h"
+
+//#define CREATE_DX12
 
 #define _CRT_SECURE_NO_DEPRECATE
 #pragma warning (disable : 4996)
 
 HMODULE originalD3D11 = NULL;
+
+#pragma region  handles
 
 D3D11_Core_Create_Device coreCreateDevice;
 D3D11_Create_Device createDevice;
@@ -109,6 +113,8 @@ extern FARPROC D3DPerformance_EndEventOrg;
 extern FARPROC D3DPerformance_GetStatusOrg;
 extern FARPROC D3DPerformance_SetMarkerOrg;
 
+#pragma endregion
+
 extern "C" void Proxy_CallOrgFcnAsm(void);
 extern "C" FARPROC FcnPtrOrg = NULL;
 
@@ -131,6 +137,8 @@ void loadOriginalD3D11()
 		LOG("loadOriginalD3D11: no originalD3D11");
 		return;
 	}
+
+#pragma region handles
 
 	coreCreateDevice = (D3D11_Core_Create_Device)GetProcAddress(originalD3D11, "D3D11CoreCreateDevice");
 	createDevice = (D3D11_Create_Device)GetProcAddress(originalD3D11, "D3D11CreateDevice");
@@ -184,6 +192,8 @@ void loadOriginalD3D11()
 	D3DPerformance_EndEventOrg = GetProcAddress(originalD3D11, "D3DPerformance_EndEvent");
 	D3DPerformance_GetStatusOrg = GetProcAddress(originalD3D11, "D3DPerformance_GetStatus");
 	D3DPerformance_SetMarkerOrg = GetProcAddress(originalD3D11, "D3DPerformance_SetMarker");
+
+#pragma endregion
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
@@ -243,7 +253,15 @@ HRESULT WINAPI D3D11CoreCreateDevice(IDXGIFactory* pFactory, IDXGIAdapter* pAdap
 
 HRESULT WINAPI D3D11CreateDevice(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverType, HMODULE Software, UINT Flags, const D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, ID3D11Device** ppDevice, D3D_FEATURE_LEVEL* pFeatureLevel, ID3D11DeviceContext** ppImmediateContext)
 {
-	LOG("D3D11CreateDevice");
+	LOG("D3D11CreateDevice, FeatureLevels: " + std::to_string(FeatureLevels));
+
+	if (FeatureLevels > 0)
+	{
+		for (size_t i = 0; i < FeatureLevels; i++)
+		{
+			LOG("D3D11CreateDevice, pFeatureLevels[" + std::to_string(i) + "]: " + int_to_hex(pFeatureLevels[i]));
+		}
+	}
 
 	if (!originalD3D11)
 	{
@@ -252,12 +270,86 @@ HRESULT WINAPI D3D11CreateDevice(IDXGIAdapter* pAdapter, D3D_DRIVER_TYPE DriverT
 	}
 
 	HRESULT result;
+
+#ifndef CREATE_DX12
 	result = createDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
 
 	if (result != S_OK)
 		LOG("D3D11CreateDevice: " + int_to_hex(result));
 	else
 		LOG("D3D11CreateDevice: OK!");
+#else
+	ID3D12Device* d3d12device = nullptr;
+
+	if (FeatureLevels > 0)
+	{
+		bool ok = false;
+
+		for (size_t i = 0; i < FeatureLevels; i++)
+		{
+			result = D3D12CreateDevice(pAdapter, pFeatureLevels[i], IID_PPV_ARGS(&d3d12device));
+			LOG("D3D11CreateDevice D3D12CreateDevice " + int_to_hex(pFeatureLevels[i]) + " result: " + int_to_hex(result));
+
+			if (result == S_OK)
+			{
+				ok = true;
+				break;
+			}
+		}
+
+		if (!ok)
+		{
+			LOG("D3D11CreateDevice: " + int_to_hex(result));
+			return result;
+		}
+	}
+	else
+	{
+		result = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&d3d12device));
+		LOG("D3D11CreateDevice D3D12CreateDevice D3D_FEATURE_LEVEL_12_0 result: " + int_to_hex(result));
+
+		if (result != S_OK)
+		{
+
+			result = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_1, IID_PPV_ARGS(&d3d12device));
+			LOG("D3D11CreateDevice D3D12CreateDevice D3D_FEATURE_LEVEL_11_1 result: " + int_to_hex(result));
+
+			if (result != S_OK)
+			{
+				result = D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&d3d12device));
+				LOG("D3D11CreateDevice D3D12CreateDevice D3D_FEATURE_LEVEL_11_0 result: " + int_to_hex(result));
+
+				if (result != S_OK)
+					return result;
+			}
+		}
+	}
+
+	if (d3d12device == nullptr)
+		return E_NOINTERFACE;
+
+	LOG("D3D11CreateDevice d3d12device created!");
+
+	D3D12_COMMAND_QUEUE_DESC desc;
+	desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_HIGH;
+	desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	desc.NodeMask = 0;
+
+	ID3D12CommandQueue* d3d12queue;
+	result = d3d12device->CreateCommandQueue(&desc, IID_PPV_ARGS(&d3d12queue));
+
+	if (result != S_OK)
+	{
+		LOG("D3D11CreateDevice can't CreateCommandQueue!");
+		return result;
+	}
+
+	LOG("D3D11CreateDevice d3d12queue created!");
+	result = D3D11On12CreateDevice(d3d12device, Flags, pFeatureLevels, FeatureLevels, (IUnknown**)&d3d12queue, 1, 0, ppDevice, ppImmediateContext, pFeatureLevel);
+
+	//d3d12device->Release();
+#endif
 
 	return result;
 }
@@ -266,6 +358,9 @@ HRESULT WINAPI D3D11CreateDeviceAndSwapChain(IDXGIAdapter* pAdapter, D3D_DRIVER_
 {
 	LOG("D3D11CreateDeviceAndSwapChain");
 
+	if (ppSwapChain && !pSwapChainDesc)
+		return E_INVALIDARG;
+
 	if (!originalD3D11)
 	{
 		LOG("D3D11CreateDeviceAndSwapChain: no originalD3D11");
@@ -273,14 +368,69 @@ HRESULT WINAPI D3D11CreateDeviceAndSwapChain(IDXGIAdapter* pAdapter, D3D_DRIVER_
 	}
 
 	HRESULT result;
+
+#ifndef CREATE_DX12
 	result = createDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
-
-	if (result != S_OK)
-		LOG("D3D11CreateDeviceAndSwapChain: " + int_to_hex(result));
-	else
-		LOG("D3D11CreateDeviceAndSwapChain: OK!");
-
+	LOG("D3D11CreateDeviceAndSwapChain result: " + int_to_hex(result));
 	return result;
+#else
+	if (ppSwapChain && !pSwapChainDesc)
+		return E_INVALIDARG;
+
+	ID3D11Device* d3d11Device;
+	ID3D11DeviceContext* d3d11Context;
+
+	result = D3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, &d3d11Device, pFeatureLevel, &d3d11Context);
+	LOG("D3D11CreateDeviceAndSwapChain for Dx12 result: " + int_to_hex(result));
+
+	if (ppSwapChain)
+	{
+		IDXGIDevice* dxgiDevice = nullptr;
+		IDXGIAdapter* dxgiAdapter = nullptr;
+		IDXGIFactory* dxgiFactory = nullptr;
+
+		result = d3d11Device->QueryInterface(IID_PPV_ARGS(&dxgiDevice));
+		LOG("D3D11CreateDeviceAndSwapChain d3d11Device->QueryInterface result: " + int_to_hex(result));
+
+		if (result != S_OK)
+			return E_INVALIDARG;
+
+		result = dxgiDevice->GetParent(IID_PPV_ARGS(&dxgiAdapter));
+		dxgiDevice->Release();
+		LOG("D3D11CreateDeviceAndSwapChain dxgiDevice->GetParent result: " + int_to_hex(result));
+
+		if (result != S_OK)
+			return E_INVALIDARG;
+
+		result = dxgiAdapter->GetParent(IID_PPV_ARGS(&dxgiFactory));
+		dxgiAdapter->Release();
+		LOG("D3D11CreateDeviceAndSwapChain dxgiAdapter->GetParent result: " + int_to_hex(result));
+
+		if (result != S_OK)
+			return E_INVALIDARG;
+
+		DXGI_SWAP_CHAIN_DESC desc = *pSwapChainDesc;
+		result = dxgiFactory->CreateSwapChain(d3d11Device, &desc, ppSwapChain);
+		dxgiFactory->Release();
+		LOG("D3D11CreateDeviceAndSwapChain dxgiFactory->CreateSwapChain result: " + int_to_hex(result));
+
+		if (result != S_OK)
+			return result;
+	}
+
+	if (ppDevice != nullptr)
+		*ppDevice = d3d11Device;
+	else
+		d3d11Device->Release();
+
+	if (ppImmediateContext != nullptr)
+		*ppImmediateContext = d3d11Context;
+	else
+		d3d11Context->Release();
+
+	return S_OK;
+#endif
+
 }
 
 HRESULT WINAPI D3D11On12CreateDevice(IUnknown* pDevice, UINT Flags, const D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, IUnknown* const* ppCommandQueues, UINT NumQueues, UINT NodeMask, ID3D11Device** ppDevice, ID3D11DeviceContext** ppImmediateContext, D3D_FEATURE_LEVEL* pChosenFeatureLevel)
@@ -291,15 +441,6 @@ HRESULT WINAPI D3D11On12CreateDevice(IUnknown* pDevice, UINT Flags, const D3D_FE
 	{
 		LOG("D3D11On12CreateDevice: no originalD3D11");
 		return DXGI_ERROR_NOT_FOUND;
-	}
-
-	WrappedD3D12Device* proxyDevice = nullptr;
-	if (pDevice->QueryInterface(__uuidof(ID3D12ProxyDevice), (void**)&proxyDevice) == S_OK && proxyDevice != nullptr)
-	{
-		LOG("D3D11On12CreateDevice ID3D12ProxyDevice found");
-		auto result = d3d11on12CreateDevice(proxyDevice->m_device, Flags, pFeatureLevels, FeatureLevels, ppCommandQueues, NumQueues, NodeMask, ppDevice, ppImmediateContext, pChosenFeatureLevel);
-		LOG("D3D11On12CreateDevice: " + int_to_hex(result));
-		return result;
 	}
 
 	auto result = d3d11on12CreateDevice(pDevice, Flags, pFeatureLevels, FeatureLevels, ppCommandQueues, NumQueues, NodeMask, ppDevice, ppImmediateContext, pChosenFeatureLevel);

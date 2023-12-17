@@ -172,13 +172,6 @@ HRESULT __stdcall WrappedD3D12Device::QueryInterface(REFIID riid, void** ppvObje
 		*ppvObject = this;
 		return S_OK;
 	}
-	if (riid == __uuidof(ID3D12ProxyDevice))
-	{
-		LOG("D3D12Device.QueryInterface: Looking for ID3D12ProxyDevice, returning this");
-		AddRef();
-		*ppvObject = this;
-		return S_OK;
-	}
 	else if (riid == __uuidof(ID3D12Device1))
 	{
 		if (m_device1 == nullptr)
