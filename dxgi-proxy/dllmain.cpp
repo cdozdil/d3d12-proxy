@@ -106,16 +106,16 @@ HRESULT WINAPI detGetDesc3(IDXGIAdapter4* This, /* [annotation][out] */ _Out_  D
 		LOG("IDXGIAdapter4.GetDesc3 Spoofing card info");
 		pDesc->VendorId = 0x10de;
 		pDesc->DeviceId = 0x24c9;
-		pDesc->SubSysId = 0x88ac1043;
-		pDesc->Revision = 0x00a1;
+		//pDesc->SubSysId = 0x88ac1043;
+		//pDesc->Revision = 0x00a1;
 
 		std::wstring name(L"NVIDIA GeForce RTX 3060 Ti");
 		const wchar_t* szName = name.c_str();
 		std::memset(pDesc->Description, 0, sizeof(pDesc->Description));
 		std::memcpy(pDesc->Description, szName, 54);
 
-		LUID luid = LUID{ 0, 0xDB1A };
-		std::memcpy(&pDesc->AdapterLuid, &luid, 8);
+		//LUID luid = LUID{ 0, 0xDB1A };
+		//std::memcpy(&pDesc->AdapterLuid, &luid, 8);
 	}
 
 	AttachToAdapter(This);
