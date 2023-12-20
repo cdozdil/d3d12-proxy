@@ -1,7 +1,7 @@
 # d3d12-proxy
 Graphics card spoofing libraries for DirectX
 
-I have developed these libraries to bypass vendor locking (mainly for Streamline), currently proxy acts as NVIDIA RTX 3060 Ti.
+I have developed these libraries to bypass vendor locking (mainly for Streamline), currently proxy acts as NVIDIA RTX 4090.
 
 ## Installation
 * To use it just place `dxgi.dll` next to executable, it should be enough.
